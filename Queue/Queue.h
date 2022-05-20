@@ -44,28 +44,25 @@ Queue<T, size>::Queue(const std::initializer_list<T>& elements) :
 template<typename T, size_t size>
 void Queue<T, size>::enQueue(const T& item)
 {
-	std::cout << "enQueue " << item << std::endl;
-
 	if (isFull())
 		throw std::range_error("Cannot add item to a full queue.");
 
 	m_Rear = (m_Rear + 1) % MAX_SIZE;
 	m_Data[m_Rear] = item;
 
-	m_CurrentSize++;
+	++m_CurrentSize;
 }
 
 template<typename T, size_t size>
 T Queue<T, size>::deQueue()
 {
-	std::cout << "deQueue" << std::endl;
 	if (isEmpty())
 		throw std::range_error("Cannot remove item from empty queue.");
 
 	const T& value = m_Data[m_Front];
 
 	m_Front = (m_Front + 1) % MAX_SIZE;
-	m_CurrentSize--;
+	--m_CurrentSize;
 
 	return value;
 }
@@ -100,13 +97,13 @@ std::ostream& operator<<(std::ostream& os, const Queue<T, size>& queue) {
 
 	if (queue.m_Front == queue.m_Rear) {
 
-		for (unsigned int i = 0; i < queue.m_Front; ++i) {
+		for (size_t i = 0; i < queue.m_Front; ++i) {
 			os << "0, ";
 		}
 
 		os << queue.m_Data[queue.m_Front] << ", ";
 
-		for (unsigned int i = queue.m_Rear; i < queue.maxSize() - 1; ++i) {
+		for (size_t i = queue.m_Rear; i < queue.maxSize() - 1; ++i) {
 			os << "0, ";
 		}
 
@@ -114,15 +111,15 @@ std::ostream& operator<<(std::ostream& os, const Queue<T, size>& queue) {
 
 	} else if (queue.m_Front < queue.m_Rear) {
 
-		for (unsigned int i = 0; i < queue.m_Front; ++i) {
+		for (size_t i = 0; i < queue.m_Front; ++i) {
 			os << "0, ";
 		}
 
-		for (unsigned int i = queue.m_Front; i < queue.m_Rear + 1; ++i) {
+		for (size_t i = queue.m_Front; i < queue.m_Rear + 1; ++i) {
 			os << queue.m_Data[i] << ", ";
 		}
 
-		for (unsigned int i = queue.m_Rear + 1; i < queue.maxSize() - 1; ++i) {
+		for (size_t i = queue.m_Rear + 1; i < queue.maxSize() - 1; ++i) {
 			os << "0, ";
 		}
 
@@ -130,15 +127,15 @@ std::ostream& operator<<(std::ostream& os, const Queue<T, size>& queue) {
 
 	} else {
 
-		for (unsigned int i = 0; i < queue.m_Rear + 1; ++i) {
+		for (size_t i = 0; i < queue.m_Rear + 1; ++i) {
 			os << queue.m_Data[i] << ", ";
 		}
 
-		for (unsigned int i = queue.m_Rear + 1; i < queue.m_Front; ++i) {
+		for (size_t i = queue.m_Rear + 1; i < queue.m_Front; ++i) {
 			os << "0, ";
 		}
 
-		for (unsigned int i = queue.m_Front; i < queue.maxSize() - 1; ++i) {
+		for (size_t i = queue.m_Front; i < queue.maxSize() - 1; ++i) {
 			os << queue.m_Data[i] << ", ";
 		}
 

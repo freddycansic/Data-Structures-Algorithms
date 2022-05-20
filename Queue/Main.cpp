@@ -17,6 +17,7 @@ int main() {
 	std::cout << "Front value = " << queue1.deQueue() << std::endl;
 
 	queue1.deQueue();
+
 	std::cout << queue1 << std::endl;
 
 	queue1.enQueue(7);
