@@ -1,7 +1,0 @@
-﻿  Main.cpp
-C:\Users\fredd\source\repos\Data-Structures-Algorithms\Queue\Main.cpp(9,17): warning C4244: 'argument': conversion from 'float' to 'const T', possible loss of data
-          with
-          [
-              T=int
-          ]
-  Queue.vcxproj -> C:\Users\fredd\source\repos\Data-Structures-Algorithms\Queue\x86\Queue.exe
