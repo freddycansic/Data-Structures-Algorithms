@@ -21,7 +21,7 @@ public:
 	Queue<T, size>(const std::initializer_list<T>& elements);
 
 	void enQueue(const T& item);
-	void deQueue();
+	T deQueue();
 
 	[[nodiscard]] constexpr size_t maxSize() const;
 	[[nodiscard]] size_t currentSize() const;
@@ -45,8 +45,10 @@ Queue<T, size>::Queue(const std::initializer_list<T>& elements) :
 template<typename T, size_t size>
 void Queue<T, size>::enQueue(const T& item)
 {
+	std::cout << "enQueue " << item << std::endl;
+
 	if (isFull())
-		throw std::runtime_error("Cannot add item to a full queue.");
+		throw std::range_error("Cannot add item to a full queue.");
 
 	m_Rear = (m_Rear + 1) % MAX_SIZE;
 	m_Data[m_Rear] = item;
@@ -55,14 +57,18 @@ void Queue<T, size>::enQueue(const T& item)
 }
 
 template<typename T, size_t size>
-void Queue<T, size>::deQueue()
+T Queue<T, size>::deQueue()
 {
+	std::cout << "deQueue" << std::endl;
 	if (isEmpty())
-		throw std::runtime_error("Cannot remove item from empty queue.");
+		throw std::range_error("Cannot remove item from empty queue.");
+
+	const T& value = m_Data[m_Front];
 
 	m_Front = (m_Front + 1) % MAX_SIZE;
-
 	m_CurrentSize--;
+
+	return value;
 }
 
 template<typename T, size_t size>
@@ -93,7 +99,7 @@ template<typename T, size_t size>
 std::ostream& operator<<(std::ostream& os, const Queue<T, size>& queue) {
 	os << "Queue = [";
 
-#if 0
+#if 1
 	if (queue.m_Front == queue.m_Rear) {
 
 		for (unsigned int i = 0; i < queue.m_Front; ++i) {
@@ -106,17 +112,19 @@ std::ostream& operator<<(std::ostream& os, const Queue<T, size>& queue) {
 			os << "0, ";
 		}
 
+		os << "0]";
+
 	} else if (queue.m_Front < queue.m_Rear) {
 
 		for (unsigned int i = 0; i < queue.m_Front; ++i) {
 			os << "0, ";
 		}
 
-		for (unsigned int i = queue.m_Front; i < queue.m_Rear; ++i) {
+		for (unsigned int i = queue.m_Front; i < queue.m_Rear + 1; ++i) {
 			os << queue.m_Data[i] << ", ";
 		}
 
-		for (unsigned int i = queue.m_Rear; i < queue.maxSize()-1; ++i) {
+		for (unsigned int i = queue.m_Rear + 1; i < queue.maxSize() - 1; ++i) {
 			os << "0, ";
 		}
 
@@ -124,25 +132,29 @@ std::ostream& operator<<(std::ostream& os, const Queue<T, size>& queue) {
 
 	} else {
 
-		for (unsigned int i = 0; i < queue.m_Rear; ++i) {
+		for (unsigned int i = 0; i < queue.m_Rear + 1; ++i) {
 			os << queue.m_Data[i] << ", ";
 		}
 
-		for (unsigned int i = queue.m_Rear; i < queue.m_Front; ++i) {
+		for (unsigned int i = queue.m_Rear + 1; i < queue.m_Front; ++i) {
 			os << "0, ";
 		}
 
-		for (unsigned int i = queue.m_Front; i < queue.maxSize()-1; ++i) {
+		for (unsigned int i = queue.m_Front; i < queue.maxSize() - 1; ++i) {
 			os << queue.m_Data[i] << ", ";
 		}
 
 		os << queue.m_Data[queue.maxSize() - 1] << "]";
 
 	}
+
+	os << " Front = " << queue.m_Front << " Rear = " << queue.m_Rear;
+
 #else
 	for (const auto& element : queue.m_Data) {
 		os << element << ", ";
 	}
+	os << " Front = " << queue.m_Front << " Rear = " << queue.m_Rear;
 #endif
 
 	return os;
