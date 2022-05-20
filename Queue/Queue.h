@@ -10,11 +10,10 @@ template <typename T, size_t size>
 class Queue
 {
 private:
-	std::array<T, size> m_Data;
-	size_t m_Front, m_Rear;
-
 	const size_t MAX_SIZE = size;
-	size_t m_CurrentSize;
+
+	std::array<T, size> m_Data;
+	size_t m_Front, m_Rear, m_CurrentSize;
 
 public:
 
@@ -99,7 +98,6 @@ template<typename T, size_t size>
 std::ostream& operator<<(std::ostream& os, const Queue<T, size>& queue) {
 	os << "Queue = [";
 
-#if 1
 	if (queue.m_Front == queue.m_Rear) {
 
 		for (unsigned int i = 0; i < queue.m_Front; ++i) {
@@ -149,13 +147,6 @@ std::ostream& operator<<(std::ostream& os, const Queue<T, size>& queue) {
 	}
 
 	os << " Front = " << queue.m_Front << " Rear = " << queue.m_Rear;
-
-#else
-	for (const auto& element : queue.m_Data) {
-		os << element << ", ";
-	}
-	os << " Front = " << queue.m_Front << " Rear = " << queue.m_Rear;
-#endif
 
 	return os;
 }
