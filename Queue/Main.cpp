@@ -31,5 +31,10 @@ int main() {
 
 	std::cout << "Full? " << queue1.isFull() << std::endl;
 
+	Queue<int, 2> queue2 = { 1, 2 };
+	queue2.deQueue();
+
+	std::cout << queue2 << std::endl;
+
 	return 0;
 }
