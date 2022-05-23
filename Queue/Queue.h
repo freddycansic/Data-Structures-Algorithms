@@ -72,10 +72,10 @@ public:
 
 template <typename T, size_t size>
 Queue<T, size>::Queue(const std::initializer_list<T>& elements) :
-	m_Data{T()}, m_Rear(elements.size() - 1), m_CurrentSize(elements.size())
+	m_Rear(elements.size() - 1), m_CurrentSize(elements.size())
 {
 	if (elements.size() > MAX_SIZE)
-		throw std::runtime_error("Too many elements given for maximum queue size.");
+		throw std::range_error("Too many elements given for maximum queue size.");
 
 	std::copy(begin(elements), end(elements), begin(m_Data));
 }
