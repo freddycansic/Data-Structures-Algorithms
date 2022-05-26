@@ -4,12 +4,17 @@
 
 int main() {
 
-	DynamicArray<int> dynamicArr = {1, 2, 3};
+	DynamicArray<int> dynamicArr1 = {1, 2, 3};
 
-	while (true) {
-		dynamicArr.append(8);
-		//std::cout << dynamicArr << "\n";
-	}
+	std::cout << dynamicArr1 << std::endl;
+
+	DynamicArray<int> dynamicArr2 = dynamicArr1;
+
+	//dynamicArr1 = DynamicArray<int>{4, 5, 6, 7};
+
+	//std::cout << dynamicArr1 << std::endl;
+
+	std::cout << "END OF PROGRAM" << std::endl;
 
 	return 0;
 }

@@ -5,6 +5,9 @@
 #include <iostream>
 #include <iterator>
 
+// toggle comment to toggle debug messages
+#define DYNAMIC_ARRAY_DEBUG
+
 template<typename T>
 class DynamicArray
 {
@@ -16,7 +19,29 @@ private:
 	T* allocNewArray(size_t count);
 
 public:
+	/**
+	 * @brief Construct a dynamic array with a list of elements.
+	 * @param elements List of elements to construct array with.
+	*/
 	DynamicArray(const std::initializer_list<T>& elements);
+
+	/**
+	 * @brief Construct an empty dynamic array.
+	*/
+	DynamicArray() = default;
+
+	/**
+	 * @brief Copy a dynamic array into another dynamic array.
+	 * @param other The array to copy from.
+	*/
+	DynamicArray(const DynamicArray<T>& other);
+
+	/**
+	 * @brief Move a dynamic array into another dynamic array.
+	 * @param other The array to move from.
+	*/
+	DynamicArray(DynamicArray<T>&& other) noexcept;
+
 	~DynamicArray();
 
 	void append(const T& element);
@@ -37,8 +62,31 @@ DynamicArray<T>::DynamicArray(const std::initializer_list<T>& elements) :
 template <typename T>
 DynamicArray<T>::~DynamicArray()
 {
-	std::cout << "FREEING " << m_CountAlloced << " (" << m_CountAlloced * sizeof(T) << " BYTES)" << std::endl;
+#ifdef DYNAMIC_ARRAY_DEBUG
+	std::cout << "FREEING " << m_CountAlloced << " ELEMENTS (" << m_CountAlloced * sizeof(T) << " BYTES)" << std::endl;
+#endif
+
 	free(m_Data);
+}
+
+template<typename T>
+DynamicArray<T>::DynamicArray(const DynamicArray<T>& other) :
+	m_Count(other.m_Count), m_CountAlloced(other.m_CountAlloced)
+{
+	std::cout << "COPY CTOR" << std::endl;
+
+	this->m_Data = allocNewArray(other.m_CountAlloced);
+	std::copy(other.m_Data, other.m_Data + other.m_Count, this->m_Data);
+}
+
+template<typename T>
+DynamicArray<T>::DynamicArray(DynamicArray<T>&& other) noexcept :
+	m_Count(std::move(other.m_Count)), m_CountAlloced(std::move(other.m_CountAlloced))
+{
+	std::cout << "MOVE CTOR" << std::endl;
+
+	free(this->m_Data);
+	m_Data = std::move(other.m_Data);
 }
 
 template <typename T>
@@ -66,18 +114,24 @@ void DynamicArray<T>::append(const T& element)
 template <typename T>
 T* DynamicArray<T>::allocNewArray(size_t count)
 {
+#ifdef DYNAMIC_ARRAY_DEBUG
 	std::cout << "ALLOCATING " << count << " ELEMENTS (" << count * sizeof(T) << " BYTES)" << std::endl;
+#endif
+
 	return static_cast<T*>(malloc(count * sizeof(T)));
 }
 
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const DynamicArray<T>& arr) {
-	os << "DynamicArray = [";
-
 	for (size_t i = 0; i < arr.m_Count - 1; ++i) {
 		os << arr.m_Data[i] << ", ";
 	}
 
-	return os << arr.m_Data[arr.m_Count - 1] << "]";
-	
+	os << arr.m_Data[arr.m_Count - 1];
+
+#ifdef DYNAMIC_ARRAY_DEBUG
+	return os << " NUM ELEMENTS = " << arr.m_Count << " (" << arr.m_Count * sizeof(T) << " BYTES) NUM ALLOCATED ELEMENTS = " << arr.m_CountAlloced << " (" << arr.m_CountAlloced * sizeof(T) << " BYTES)";
+#else
+	return os;
+#endif
 }
