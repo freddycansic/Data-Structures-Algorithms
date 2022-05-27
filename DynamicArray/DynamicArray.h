@@ -4,6 +4,7 @@
 #include <initializer_list>
 #include <iostream>
 #include <iterator>
+#include <stdexcept>
 
 // toggle comment to toggle debug messages
 #define DYNAMIC_ARRAY_DEBUG
@@ -42,9 +43,18 @@ public:
 	*/
 	DynamicArray(DynamicArray<T>&& other) noexcept;
 
+	DynamicArray<T>& operator=(DynamicArray<T>&& other) noexcept;
+
 	~DynamicArray();
 
 	void append(const T& element);
+	void remove(const T& element);
+	[[nodiscard]] size_t count(const T& element) const;
+	[[nodiscard]] size_t len() const;
+	[[nodiscard]] size_t index(const T& element) const;
+	void insert(size_t pos, const T& element);
+	T pop();
+	T pop(size_t pos);
 
 	template<typename T>
 	friend std::ostream& operator<<(std::ostream& os, const DynamicArray<T>& arr);
@@ -63,7 +73,9 @@ template <typename T>
 DynamicArray<T>::~DynamicArray()
 {
 #ifdef DYNAMIC_ARRAY_DEBUG
-	std::cout << "FREEING " << m_CountAlloced << " ELEMENTS (" << m_CountAlloced * sizeof(T) << " BYTES)" << std::endl;
+	if (m_Data != nullptr) {
+		std::cout << "FREEING " << m_CountAlloced << " ELEMENTS (" << m_CountAlloced * sizeof(T) << " BYTES)" << std::endl;
+	}
 #endif
 
 	free(m_Data);
@@ -81,13 +93,27 @@ DynamicArray<T>::DynamicArray(const DynamicArray<T>& other) :
 
 template<typename T>
 DynamicArray<T>::DynamicArray(DynamicArray<T>&& other) noexcept :
-	m_Count(std::move(other.m_Count)), m_CountAlloced(std::move(other.m_CountAlloced))
+	m_Count(other.m_Count), m_CountAlloced(other.m_CountAlloced), m_Data(other.m_Data)
 {
 	std::cout << "MOVE CTOR" << std::endl;
 
-	free(this->m_Data);
-	m_Data = std::move(other.m_Data);
+	other.m_Data = nullptr;
 }
+
+template<typename T>
+DynamicArray<T>& DynamicArray<T>::operator=(DynamicArray<T>&& other) noexcept
+{
+	std::cout << "MOVE ASSIGNMENT" << std::endl;
+
+	m_Count = other.m_Count;
+	m_CountAlloced = other.m_CountAlloced;
+	m_Data = other.m_Data;
+
+	other.m_Data = nullptr;
+
+	return *this;
+}
+
 
 template <typename T>
 void DynamicArray<T>::append(const T& element)
@@ -109,6 +135,16 @@ void DynamicArray<T>::append(const T& element)
 	
 	// add new element to array
 	m_Data[m_Count++] = element;
+}
+
+template<typename T>
+void DynamicArray<T>::remove(const T& element)
+{
+	if (const auto elementIt = std::find(m_Data, m_Data + m_Count, element); elementIt == m_Data + m_Count) {
+		throw std::range_error("Cannot remove an element which is not in array.");
+	} else {
+		std::copy(elementIt + 1, m_Data + m_Count, elementIt);
+	}
 }
 
 template <typename T>

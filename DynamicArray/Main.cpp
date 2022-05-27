@@ -8,11 +8,9 @@ int main() {
 
 	std::cout << dynamicArr1 << std::endl;
 
-	DynamicArray<int> dynamicArr2 = dynamicArr1;
+	dynamicArr1.remove(2);
 
-	//dynamicArr1 = DynamicArray<int>{4, 5, 6, 7};
-
-	//std::cout << dynamicArr1 << std::endl;
+	std::cout << dynamicArr1 << std::endl;
 
 	std::cout << "END OF PROGRAM" << std::endl;
 
