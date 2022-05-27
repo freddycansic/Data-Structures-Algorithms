@@ -12,6 +12,7 @@
 
 // otherwise use C assert
 #else
+	#include <cassert>
 	#define ASSERT(x, msg) if (!(x)) { std::cout << (msg) << std::endl; assert(x); }
 
 #endif
