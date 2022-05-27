@@ -12,12 +12,12 @@
 template<typename T>
 class DynamicArray
 {
-
 private:
 	size_t m_Count = 0, m_CountAlloced = 0;
 	T* m_Data = nullptr;
 
 	T* allocNewArray(size_t count);
+	void doubleArraySize();
 
 public:
 	/**
@@ -55,6 +55,7 @@ public:
 	void insert(size_t pos, const T& element);
 	T pop();
 	T pop(size_t pos);
+	void reserve(size_t count);
 
 	template<typename T>
 	friend std::ostream& operator<<(std::ostream& os, const DynamicArray<T>& arr);
@@ -120,17 +121,7 @@ void DynamicArray<T>::append(const T& element)
 {
 	// if there is not enough memory allocated for new element
 	if (m_CountAlloced <= m_Count) {
-
-		m_CountAlloced *= 2;
-
-		// create new array with doubled size
-		T* tempArr = allocNewArray(m_CountAlloced);
-
-		std::copy(m_Data, m_Data + m_Count, tempArr);
-
-		free(m_Data);
-
-		m_Data = tempArr;
+		doubleArraySize();
 	}
 	
 	// add new element to array
@@ -145,6 +136,59 @@ void DynamicArray<T>::remove(const T& element)
 	} else {
 		std::copy(elementIt + 1, m_Data + m_Count, elementIt);
 	}
+
+	--m_Count;
+}
+
+template<typename T>
+size_t DynamicArray<T>::count(const T& element) const
+{
+	return std::count(m_Data, m_Data + m_Count, element);
+}
+
+template<typename T>
+size_t DynamicArray<T>::len() const
+{
+	return m_Count;
+}
+
+template<typename T>
+size_t DynamicArray<T>::index(const T& element) const
+{
+	return std::distance(m_Data, std::find(m_Data, m_Data + m_Count, element));
+}
+
+template<typename T>
+void DynamicArray<T>::insert(size_t pos, const T& element)
+{
+	if (m_CountAlloced <= m_Count) {
+		doubleArraySize();
+	}
+
+	// 1, 2, 3 (1, '7'
+	// 1, 7, 2, 3
+
+	std::copy(m_Data + pos, m_Data + m_Count, m_Data + pos + 1);
+	m_Data[pos] = element;
+
+	++m_Count;
+}
+
+template<typename T>
+T DynamicArray<T>::pop()
+{
+	return m_Data[--m_Count];
+}
+	
+template<typename T>
+T DynamicArray<T>::pop(size_t pos)
+{
+	
+}
+
+template<typename T>
+void DynamicArray<T>::reserve(size_t count)
+{
 }
 
 template <typename T>
@@ -156,6 +200,22 @@ T* DynamicArray<T>::allocNewArray(size_t count)
 
 	return static_cast<T*>(malloc(count * sizeof(T)));
 }
+
+template <typename T>
+void DynamicArray<T>::doubleArraySize()
+{
+	m_CountAlloced *= 2;
+
+	// create new array with doubled size
+	T* tempArr = allocNewArray(m_CountAlloced);
+
+	std::copy(m_Data, m_Data + m_Count, tempArr);
+
+	free(m_Data);
+
+	m_Data = tempArr;
+}
+
 
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const DynamicArray<T>& arr) {
