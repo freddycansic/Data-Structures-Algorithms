@@ -108,7 +108,7 @@ public:
 	T pop(size_t pos);
 
 	/**
-	 * @brief Append an element to the end of the array.
+	 * @brief Reserve memory for a given number of elements.
 	 * @param count Number of elements to allocate memory for.
 	 */
 	void reserve(size_t count);
@@ -119,7 +119,7 @@ public:
 	void clear();
 
 	/**
-	 * @brief Returns the number of times a given parameter occurs in the array.
+	 * @brief Returns the number of times a given element occurs in the array.
 	 * @element Element to count.
 	 * @returns Count of element in array.
 	 */
