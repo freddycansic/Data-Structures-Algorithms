@@ -2,30 +2,42 @@
 
 #include "DynamicArray.h"
 
-int main() {
+int main()
+{
+	DynamicArray<int> arr = {1, 2, 3, 4, 5};
+	std::cout << arr << std::endl;
 
-	DynamicArray<int> dynamicArr1 = {1, 2, 3};
+	arr.append(6);
+	std::cout << arr << std::endl;
 
-	std::cout << dynamicArr1 << std::endl;
+	arr.remove(6);
+	std::cout << arr << std::endl;
 
-	std::cout << "Remove 2" << std::endl;
+	arr.insert(3, 99);
+	std::cout << arr << std::endl;
 
-	//dynamicArr1.remove(2);
+	std::cout << arr.pop() << std::endl;
+	std::cout << arr << std::endl;
 
-	std::cout << dynamicArr1 << std::endl;
+	std::cout << arr.pop(1) << std::endl;
+	std::cout << arr << std::endl;
 
-	std::cout << "Number of 1s in array = " << dynamicArr1.count(7) << std::endl;
-	std::cout << "Number of 7s in array = " << dynamicArr1.count(7) << std::endl;
+	arr.reserve(10);
+	std::cout << "Array allocated 10 * sizeof(int) = 40 bytes" << std::endl;
 
-	std::cout << "Index of value 3 = " << dynamicArr1.index(3) << std::endl;
+	std::cout << arr.count(1) << std::endl;
 
-	dynamicArr1.insert(1, 7);
+	std::cout << arr.len() << std::endl;
 
-	std::cout << "Insert 7 at pos 1" << std::endl;
+	std::cout << arr.index(1) << std::endl;
 
-	std::cout << dynamicArr1 << std::endl;
+	std::cout << arr.at(2) << std::endl;
+	std::cout << arr[2] << std::endl;
 
-	std::cout << "END OF PROGRAM" << std::endl;
+	arr.clear();
+	std::cout << arr << std::endl;
+
+	std::cout << (arr.isEmpty() ? "True" : "False") << std::endl;
 
 	return 0;
 }
