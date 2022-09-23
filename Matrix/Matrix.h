@@ -14,9 +14,13 @@ public:
 
 	Mat(const std::initializer_list<std::initializer_list<T>>& list)
 	{
-		//static_assert(list.size() == (rows * columns), "Initialiser list does not contain the right amount of elements to satisfy this matrix.");
 		static_assert(rows > 0 && columns > 0, "Matrix must have positive dimensions.");
-		memcpy(m_Data.at(0).data(), std::data(list.begin()), list.size() * sizeof(T));
+
+
+		memcpy(m_Data.at(0).data(), &list.begin()->begin(), list.size() * sizeof(T));
+		//m_Data = ;
+
+
 	}
 
 	MATRIX_ROW& operator[](size_t index)
@@ -38,9 +42,9 @@ private:
 
 template<size_t rows, size_t columns, typename T = float>
 std::ostream& operator<<(std::ostream& os, const Mat<rows, columns>& matrix) {
-	for (unsigned int col = 0; col < columns; col++) {
+	for (unsigned int row = 0; row < rows; row++) {
 		os << "| ";
-		for (unsigned int row = 0; row < rows; row++) {
+		for (unsigned int col = 0; col < columns; col++) {
 			os << matrix[row][col] << "\t";
 		}
 		os << "|\n";
