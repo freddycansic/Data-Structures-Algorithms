@@ -2,16 +2,16 @@
 
 int main()
 {
-	Mat<3, 3> mat32 = { {1, -2, 3},
-						{2, 1, 1},
-						{-3, 2, -2}
+	Mat<4, 4> mat = {
+		{1, 2, 3, 4},
+		{5, 6, 7, 8},
+		{9, 10, 11, 12},
+		{13, 14, 15, 16}
 	};
 
-	std::cout << mat32.augment<3>(Mat<3, 3>::identity()) << std::endl;
+	std::cout << mat.determinant() << std::endl;
 
-	std::cout << mat32.divideRow(2, 3) << std::endl;
 
-	std::cout << mat32.inverse() << std::endl;
 
 	return 0;
 }
