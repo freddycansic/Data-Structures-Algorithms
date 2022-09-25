@@ -70,31 +70,26 @@ public:
 
 	~Mat() = default;
 
-	[[nodiscard]] Mat<rows - 1, columns - 1> minor(size_t excludeRowIndex, size_t excludeColumnIndex) const
+	template<size_t otherRows, size_t otherCols>
+	Mat<rows, otherCols> operator*(const Mat<otherRows, otherCols>& other) const
 	{
-		Mat<rows - 1, columns - 1> minor;
+		static_assert(columns == otherRows, "Cannot multiply matrices.");
 
-		size_t minorRow = 0, minorCol = 0;
-		for (size_t majorRow = 0; majorRow < rows; ++majorRow)
-		{
-			if (majorRow == excludeRowIndex) continue;
+		Mat<rows, otherCols> result;
 
-			for (size_t majorCol = 0; majorCol < columns; ++majorCol)
-			{
-				if (majorCol == excludeColumnIndex) continue;
-
-				minor[minorRow][minorCol++] = m_Data[majorRow][majorCol];
-
-				if (minorCol == columns - 1) // TODO is there a better way to do this?
-				{
-					minorCol = 0;
-					++minorRow;
+		for (size_t row = 0; row < rows; ++row) {
+			// for every column in matrix B
+			for (size_t otherCol = 0; otherCol < otherCols; ++otherCol) {
+				// for every piece of data in the column and row
+				for (size_t element = 0; element < rows; ++element) {
+					// sum of them
+					result[row][otherCol] += m_Data[row][element] * other[element][otherCol];
 				}
-			
+
 			}
 		}
 
-		return minor;
+		return result;
 	}
 
 	[[nodiscard]] T determinant() const
@@ -211,6 +206,33 @@ public:
 		}
 
 		return newMat;
+	}
+
+	[[nodiscard]] Mat<rows - 1, columns - 1> minor(size_t excludeRowIndex, size_t excludeColumnIndex) const
+	{
+		Mat<rows - 1, columns - 1> minor;
+
+		size_t minorRow = 0, minorCol = 0;
+		for (size_t majorRow = 0; majorRow < rows; ++majorRow)
+		{
+			if (majorRow == excludeRowIndex) continue;
+
+			for (size_t majorCol = 0; majorCol < columns; ++majorCol)
+			{
+				if (majorCol == excludeColumnIndex) continue;
+
+				minor[minorRow][minorCol++] = m_Data[majorRow][majorCol];
+
+				if (minorCol == columns - 1) // TODO is there a better way to do this?
+				{
+					minorCol = 0;
+					++minorRow;
+				}
+
+			}
+		}
+
+		return minor;
 	}
 
 	[[nodiscard]] Mat<rows, columns> divideRow(size_t rowToDivide, T divisor) const

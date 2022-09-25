@@ -13,6 +13,7 @@ int main()
 
 	std::cout << mat.determinant() << std::endl;
 	std::cout << mat.inverse() << std::endl;
+	std::cout << mat * mat << std::endl;
 
 	return 0;
 }
