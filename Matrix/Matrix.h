@@ -13,71 +13,7 @@ class Mat
 
 	using MATRIX_ROW = std::array<T, columns>;
 	using MATRIX_DATA = std::array<MATRIX_ROW, rows>;
-
-public: // idk why this has to be public
-	template<size_t newRows, size_t newCols>
-	[[nodiscard]] Mat<newRows, newCols> setMatSize() const
-	{
-		Mat<newRows, newCols> newMat;
-
-		for (size_t row = 0; row < (newRows < rows ? newRows : rows); ++row)
-		{
-			for (size_t col = 0; col < (newCols < columns ? newCols : columns); ++col)
-			{
-				newMat[row][col] = m_Data[row][col];
-			}
-		}
-
-		return newMat;
-	}
-
-	[[nodiscard]] Mat<rows, columns> divideRow(size_t rowToDivide, T divisor) const
-	{
-		auto result = *this;
-
-		for (auto& el : result[rowToDivide])
-		{
-			el /= divisor;
-		}
-
-		return result;
-	}
-
-	[[nodiscard]] Mat<rows, columns> addRowToRow(size_t rowToAddTo, T multiplier, size_t rowToAddFrom) const
-	{
-		auto result = *this;
-
-		for (size_t col = 0; col < columns; ++col)
-		{
-			result[rowToAddTo][col] += multiplier * result[rowToAddFrom][col];
-		}
-
-		return result;
-	}
-
-	template<size_t newColumns>
-	[[nodiscard]] Mat<rows, columns + newColumns> augment(const Mat<rows, newColumns>& newMat) const
-	{
-		static_assert(newColumns > 0, "Number of new columns must be greater than 0!");
-
-		// grow matrix while maintaining data
-		auto augmentedMat = this->setMatSize<rows, columns + newColumns>();
-
-		// append new matrix
-		for (size_t row = 0; row < rows; ++row)
-		{
-			std::copy(newMat[row].begin(), newMat[row].end(), &augmentedMat[row][columns]);
-		}
-
-		return augmentedMat;
-	}
-
-	template<size_t newColumns>
-	[[nodiscard]] Mat<rows, columns + newColumns> augment() const
-	{
-		return augment(Mat<rows, newColumns>());
-	}
-
+	
 public:
 	Mat()
 	{
@@ -102,7 +38,7 @@ public:
 		}
 	}
 
-	Mat& operator=(const Mat<rows, columns>& other)
+	Mat& operator=(const Mat& other)
 	{
 		for (size_t row = 0; row < rows; ++row)
 		{
@@ -258,6 +194,70 @@ public:
 		}
 
 		return result;
+	}
+
+	// TODO make all this stuff private
+	template<size_t newRows, size_t newCols>
+	[[nodiscard]] Mat<newRows, newCols> setMatSize() const
+	{
+		Mat<newRows, newCols> newMat;
+
+		for (size_t row = 0; row < (newRows < rows ? newRows : rows); ++row)
+		{
+			for (size_t col = 0; col < (newCols < columns ? newCols : columns); ++col)
+			{
+				newMat[row][col] = m_Data[row][col];
+			}
+		}
+
+		return newMat;
+	}
+
+	[[nodiscard]] Mat<rows, columns> divideRow(size_t rowToDivide, T divisor) const
+	{
+		auto result = *this;
+
+		for (auto& el : result[rowToDivide])
+		{
+			el /= divisor;
+		}
+
+		return result;
+	}
+
+	[[nodiscard]] Mat<rows, columns> addRowToRow(size_t rowToAddTo, T multiplier, size_t rowToAddFrom) const
+	{
+		auto result = *this;
+
+		for (size_t col = 0; col < columns; ++col)
+		{
+			result[rowToAddTo][col] += multiplier * result[rowToAddFrom][col];
+		}
+
+		return result;
+	}
+
+	template<size_t newColumns>
+	[[nodiscard]] Mat<rows, columns + newColumns> augment(const Mat<rows, newColumns>& newMat) const
+	{
+		static_assert(newColumns > 0, "Number of new columns must be greater than 0!");
+
+		// grow matrix while maintaining data
+		auto augmentedMat = this->setMatSize<rows, columns + newColumns>();
+
+		// append new matrix
+		for (size_t row = 0; row < rows; ++row)
+		{
+			std::copy(newMat[row].begin(), newMat[row].end(), &augmentedMat[row][columns]);
+		}
+
+		return augmentedMat;
+	}
+
+	template<size_t newColumns>
+	[[nodiscard]] Mat<rows, columns + newColumns> augment() const
+	{
+		return augment(Mat<rows, newColumns>());
 	}
 
 	MATRIX_ROW& operator[](size_t index)
