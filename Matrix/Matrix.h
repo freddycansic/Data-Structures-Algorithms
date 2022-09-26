@@ -81,11 +81,15 @@ public:
 
 		if constexpr (rows <= 4)
 		{
-			const __m128 r0 = _mm_load_ps(reinterpret_cast<float*>(&m_Data[0]));
-			const __m128 r1 = _mm_load_ps(reinterpret_cast<float*>(&m_Data[1]));
+			//const auto r0 = _mm_load_ps(reinterpret_cast<const float*>(&m_Data[0]));
+			//const auto r1 = _mm_load_ps(reinterpret_cast<const float*>(&m_Data[1]));
 
-			auto res = r0 + r1;
-			
+			//const auto res = _mm_add_ps(r0, r1);
+
+			//T result[4];
+
+			//_mm_store_ps(reinterpret_cast<float*>(result), res);
+
 		}
 
 		for (size_t row = 0; row < rows; ++row) {
@@ -319,29 +323,6 @@ public:
 		return newMat;
 	}
 
-	[[nodiscard]] Mat<rows, columns> divideRow(size_t rowToDivide, T divisor) const
-	{
-		auto result = *this;
-
-		for (auto& el : result[rowToDivide])
-		{
-			el /= divisor;
-		}
-
-		return result;
-	}
-
-	[[nodiscard]] Mat<rows, columns> addRowToRow(size_t rowToAddTo, T multiplier, size_t rowToAddFrom) const
-	{
-		auto result = *this;
-
-		for (size_t col = 0; col < columns; ++col)
-		{
-			result[rowToAddTo][col] += multiplier * result[rowToAddFrom][col];
-		}
-
-		return result;
-	}
 
 	template<size_t newColumns>
 	[[nodiscard]] Mat<rows, columns + newColumns> augment(const Mat<rows, newColumns>& newMat) const
@@ -364,6 +345,49 @@ public:
 	[[nodiscard]] Mat<rows, columns + newColumns> augment() const
 	{
 		return augment(Mat<rows, newColumns>());
+	}
+
+	[[nodiscard]] Mat<rows, columns> divideRow(size_t rowToDivide, T divisor) const
+	{
+		auto result = *this;
+
+		for (auto& el : result[rowToDivide])
+		{
+			el /= divisor;
+		}
+
+		return result;
+	}
+
+	[[nodiscard]] Mat<rows, columns> addRowToRow(size_t rowToAddToIndex, T multiplier, size_t rowToAddFromIndex) const
+	{
+		auto result = *this;
+
+		if constexpr (columns <= 8)
+		{
+			const auto rowToAddFrom = _mm256_load_ps(reinterpret_cast<const float*>(&m_Data[rowToAddFromIndex]));
+			const auto rowToAddTo = _mm256_load_ps(reinterpret_cast<const float*>(&m_Data[rowToAddToIndex]));
+
+			std::array<T, columns> multipliersArray;
+			multipliersArray.fill(multiplier);
+
+			const auto multipliers = _mm256_load_ps(reinterpret_cast<const float*>(multipliersArray.data()));
+
+			const auto multipliedRowToAddFrom = _mm256_mul_ps(rowToAddFrom, multipliers);
+
+			const auto resultingRow = _mm256_add_ps(multipliedRowToAddFrom, rowToAddTo);
+
+			_mm256_store_ps(reinterpret_cast<float*>(&result[rowToAddToIndex]), resultingRow);
+
+			return result;
+		}
+
+		for (size_t col = 0; col < columns; ++col)
+		{
+			result[rowToAddToIndex][col] += multiplier * result[rowToAddFromIndex][col];
+		}
+
+		return result;
 	}
 
 	MATRIX_ROW& operator[](size_t index)
