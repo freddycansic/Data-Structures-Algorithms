@@ -79,19 +79,6 @@ public:
 
 		Mat<rows, otherCols> result;
 
-		if constexpr (rows <= 4)
-		{
-			//const auto r0 = _mm_load_ps(reinterpret_cast<const float*>(&m_Data[0]));
-			//const auto r1 = _mm_load_ps(reinterpret_cast<const float*>(&m_Data[1]));
-
-			//const auto res = _mm_add_ps(r0, r1);
-
-			//T result[4];
-
-			//_mm_store_ps(reinterpret_cast<float*>(result), res);
-
-		}
-
 		for (size_t row = 0; row < rows; ++row) {
 			// for every column in matrix B
 			for (size_t otherCol = 0; otherCol < otherCols; ++otherCol) {
@@ -363,7 +350,7 @@ public:
 	{
 		auto result = *this;
 
-		if constexpr (columns <= 8)
+		if constexpr (columns == 8)
 		{
 			const auto rowToAddFrom = _mm256_load_ps(reinterpret_cast<const float*>(&m_Data[rowToAddFromIndex]));
 			const auto rowToAddTo = _mm256_load_ps(reinterpret_cast<const float*>(&m_Data[rowToAddToIndex]));

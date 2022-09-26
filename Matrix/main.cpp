@@ -75,7 +75,16 @@ int main()
 		1, 14, 0, 3
 	);
 
-	runAsyncBenchmark(mat, glmMat, 100000);
+	//runAsyncBenchmark(mat, glmMat, 100000);
+
+	const Mat<3, 3> mat2 = {
+		{0, 1, 30},
+		{3, -1, 3},
+		{4, 7, 2},
+	};
+
+	std::cout << mat2.gaussianInverse() << std::endl;
+	std::cout << mat2.adjugateInverse() << std::endl;
 
 	return 0;
 }
