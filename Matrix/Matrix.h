@@ -5,6 +5,8 @@
 #include <iostream>
 #include <functional>
 #include <cassert>
+#include <xmmintrin.h>
+#include <intrin.h>
 
 template<size_t rows, size_t columns, typename T = float> requires std::is_arithmetic_v<T>
 class Mat
@@ -76,6 +78,15 @@ public:
 		static_assert(columns == otherRows, "Cannot multiply matrices.");
 
 		Mat<rows, otherCols> result;
+
+		if constexpr (rows <= 4)
+		{
+			const __m128 r0 = _mm_load_ps(reinterpret_cast<float*>(&m_Data[0]));
+			const __m128 r1 = _mm_load_ps(reinterpret_cast<float*>(&m_Data[1]));
+
+			auto res = r0 + r1;
+			
+		}
 
 		for (size_t row = 0; row < rows; ++row) {
 			// for every column in matrix B
