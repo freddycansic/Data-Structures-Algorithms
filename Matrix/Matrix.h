@@ -92,6 +92,21 @@ public:
 		return result;
 	}
 
+	Mat operator*(T multilpier) const
+	{
+		Mat result;
+
+		for (size_t row = 0; row < rows; ++row)
+		{
+			for (size_t col = 0; col < columns; ++col)
+			{
+				result[row][col] = multilpier * m_Data[row][col];
+			}
+		}
+
+		return result;
+	}
+
 	[[nodiscard]] T determinant() const
 	{
 		static_assert(rows == columns, "Can only compute determinant of square matrix!");
@@ -116,7 +131,7 @@ public:
 		return result;
 	}
 
-	[[nodiscard]] Mat<rows, columns> inverse() const
+	[[nodiscard]] Mat<rows, columns> gaussianInverse() const
 	{
 		static_assert(rows == columns, "Can only compute inverse of square matrix!");
 
@@ -173,9 +188,15 @@ public:
 			{
 				end[row][col] = result[row][augmentedCol];
 			}
+			//std::copy(result[row].end() - columns, result[row].end(), end[row].begin());
 		}
 
 		return end;
+	}
+
+	[[nodiscard]] Mat adjugateInverse() const
+	{
+		return this->adjugate() * (1 / this->determinant());
 	}
 
 	[[nodiscard]] static Mat identity()
@@ -189,6 +210,85 @@ public:
 		}
 
 		return result;
+	}
+
+	[[nodiscard]] Mat<rows - 1, columns - 1> minor(size_t elementRow, size_t elementColumn) const
+	{
+		static_assert(rows > 1 && columns > 1, "Can only compute minor of a matrix with order > 1!");
+		static_assert(rows == columns, "Can only compute minor of a square matrix!");
+
+		Mat<rows - 1, columns - 1> minor;
+
+		size_t minorRow = 0, minorCol = 0;
+		for (size_t majorRow = 0; majorRow < rows; ++majorRow)
+		{
+			if (majorRow == elementRow) continue;
+
+			for (size_t majorCol = 0; majorCol < columns; ++majorCol)
+			{
+				if (majorCol == elementColumn) continue;
+
+				minor[minorRow][minorCol++] = m_Data[majorRow][majorCol];
+
+				if (minorCol == columns - 1) // TODO is there a better way to do this?
+				{
+					minorCol = 0;
+					++minorRow;
+				}
+
+			}
+		}
+
+		return minor;
+	}
+
+	[[nodiscard]] T cofactor(size_t elementRow, size_t elementColumn) const
+	{
+		// expecting arguments with indexes starting at 0
+		auto minor = this->minor(elementRow, elementColumn);
+		return static_cast<T>(std::pow(-1, elementRow + elementColumn)) * minor.determinant();
+	}
+
+	[[nodiscard]] Mat cofactorMatrix() const
+	{
+		static_assert(rows == columns, "Can only compute cofactor matrix from square matrix!");
+
+		Mat result;
+
+		for (size_t row = 0; row < rows; ++row)
+		{
+			for (size_t col = 0; col < columns; ++col)
+			{
+				result[row][col] = this->cofactor(row, col);
+			}
+		}
+
+		return result;
+	}
+
+	[[nodiscard]] Mat transpose() const
+	{
+		Mat<columns, rows> result;
+
+		for (size_t row = 0; row < rows; ++row)
+		{
+			for (size_t col = 0; col < columns; ++col)
+			{
+				result[col][row] = m_Data[row][col];
+			}
+		}
+
+		return result;
+	}
+
+	[[nodiscard]] Mat adjugate() const
+	{
+		return this->cofactorMatrix().transpose();
+	}
+
+	[[nodiscard]] Mat adjoint() const
+	{
+		return this->adjugate();
 	}
 
 	// TODO make all this stuff private
@@ -206,33 +306,6 @@ public:
 		}
 
 		return newMat;
-	}
-
-	[[nodiscard]] Mat<rows - 1, columns - 1> minor(size_t excludeRowIndex, size_t excludeColumnIndex) const
-	{
-		Mat<rows - 1, columns - 1> minor;
-
-		size_t minorRow = 0, minorCol = 0;
-		for (size_t majorRow = 0; majorRow < rows; ++majorRow)
-		{
-			if (majorRow == excludeRowIndex) continue;
-
-			for (size_t majorCol = 0; majorCol < columns; ++majorCol)
-			{
-				if (majorCol == excludeColumnIndex) continue;
-
-				minor[minorRow][minorCol++] = m_Data[majorRow][majorCol];
-
-				if (minorCol == columns - 1) // TODO is there a better way to do this?
-				{
-					minorCol = 0;
-					++minorRow;
-				}
-
-			}
-		}
-
-		return minor;
 	}
 
 	[[nodiscard]] Mat<rows, columns> divideRow(size_t rowToDivide, T divisor) const
