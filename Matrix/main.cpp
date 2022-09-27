@@ -76,15 +76,27 @@ int main()
 	);
 
 	//runAsyncBenchmark(mat, glmMat, 100000);
+	
+	std::cout << mat.multiplyOld(mat) << std::endl;
+	std::cout << mat * mat << std::endl;
 
-	const Mat<3, 3> mat2 = {
-		{0, 1, 30},
-		{3, -1, 3},
-		{4, 7, 2},
-	};
+	constexpr size_t iterations = 100000;
 
-	std::cout << mat2.gaussianInverse() << std::endl;
-	std::cout << mat2.adjugateInverse() << std::endl;
+	std::cout << "Multiply old " << benchmark([iterations, &mat]()
+	{
+		for (size_t i = 0; i < iterations; ++i)
+		{
+			mat.multiplyOld(mat);
+		}
+	}) << std::endl;
+
+	std::cout << "Multiply new " << benchmark([iterations, &mat]()
+		{
+			for (size_t i = 0; i < iterations; ++i)
+			{
+				mat* mat;
+			}
+		}) << std::endl;
 
 	return 0;
 }

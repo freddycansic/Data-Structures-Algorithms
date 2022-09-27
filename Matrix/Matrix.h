@@ -79,6 +79,27 @@ public:
 
 		Mat<rows, otherCols> result;
 
+		if constexpr (columns == 4)
+		{
+			for (size_t row = 0; row < rows; ++row) {
+			const auto thisRow = _mm_load_ps(reinterpret_cast<const float*>(&m_Data[row]));
+				// for every column in matrix B
+				for (size_t otherCol = 0; otherCol < otherCols; ++otherCol) {
+
+					std::array<T, 4> otherColumnArray = { other[0][otherCol], other[1][otherCol], other[2][otherCol], other[3][otherCol] };
+
+					const auto otherColumn = _mm_load_ps(reinterpret_cast<const float*>(otherColumnArray.data()));
+
+					// TODO add checking for SSE4.1 to see if i can use dp_ps
+					const auto res = _mm_dp_ps(thisRow, otherColumn, 0xFF);
+
+					result[row][otherCol] = _mm_cvtss_f32(res);
+				}
+			}
+
+			return result;
+		}
+
 		for (size_t row = 0; row < rows; ++row) {
 			// for every column in matrix B
 			for (size_t otherCol = 0; otherCol < otherCols; ++otherCol) {
@@ -87,7 +108,27 @@ public:
 					// sum of them
 					result[row][otherCol] += m_Data[row][element] * other[element][otherCol];
 				}
+			}
+		}
 
+		return result;
+	}
+
+	template<size_t otherRows, size_t otherCols>
+	Mat<rows, otherCols> multiplyOld(const Mat<otherRows, otherCols>& other) const
+	{
+		static_assert(columns == otherRows, "Cannot multiply matrices.");
+
+		Mat<rows, otherCols> result;
+
+		for (size_t row = 0; row < rows; ++row) {
+			// for every column in matrix B
+			for (size_t otherCol = 0; otherCol < otherCols; ++otherCol) {
+				// for every piece of data in the column and row
+				for (size_t element = 0; element < rows; ++element) {
+					// sum of them
+					result[row][otherCol] += m_Data[row][element] * other[element][otherCol];
+				}
 			}
 		}
 
@@ -244,11 +285,11 @@ public:
 		return minor;
 	}
 
-	[[nodiscard]] T cofactor(size_t elementRow, size_t elementColumn) const
+	[[nodiscard]] T cofactor(size_t elementRowIndex, size_t elementColumnIndex) const
 	{
 		// expecting arguments with indexes starting at 0
-		auto minor = this->minor(elementRow, elementColumn);
-		return static_cast<T>(std::pow(-1, elementRow + elementColumn)) * minor.determinant();
+		auto minor = this->minor(elementRowIndex, elementColumnIndex);
+		return static_cast<T>(std::pow(-1, elementRowIndex + elementColumnIndex)) * minor.determinant();
 	}
 
 	[[nodiscard]] Mat cofactorMatrix() const
@@ -299,9 +340,9 @@ public:
 	{
 		Mat<newRows, newCols> newMat;
 
-		for (size_t row = 0; row < (newRows < rows ? newRows : rows); ++row)
+		for (size_t row = 0; row < std::min(newRows, rows); ++row)
 		{
-			for (size_t col = 0; col < (newCols < columns ? newCols : columns); ++col)
+			for (size_t col = 0; col < std::min(newRows, rows); ++col)
 			{
 				newMat[row][col] = m_Data[row][col];
 			}
@@ -309,7 +350,6 @@ public:
 
 		return newMat;
 	}
-
 
 	template<size_t newColumns>
 	[[nodiscard]] Mat<rows, columns + newColumns> augment(const Mat<rows, newColumns>& newMat) const
@@ -334,11 +374,28 @@ public:
 		return augment(Mat<rows, newColumns>());
 	}
 
-	[[nodiscard]] Mat<rows, columns> divideRow(size_t rowToDivide, T divisor) const
+	[[nodiscard]] Mat<rows, columns> divideRow(size_t rowToDivideIndex, T divisor) const
 	{
 		auto result = *this;
 
-		for (auto& el : result[rowToDivide])
+		// worse i think
+		//if constexpr (columns == 8)
+		//{
+		//	const auto rowToDivide = _mm256_load_ps(reinterpret_cast<const float*>(&this->m_Data[rowToDivideIndex]));
+
+		//	std::array<T, 8> divisorsArray;
+		//	divisorsArray.fill(divisor);
+
+		//	const auto divisors = _mm256_load_ps(reinterpret_cast<const float*>(divisorsArray.data()));
+
+		//	const auto resultingRow = _mm256_div_ps(rowToDivide, divisors);
+
+		//	_mm256_store_ps(reinterpret_cast<float*>(&result[rowToDivideIndex]), resultingRow);
+
+		//	return result;
+		//}
+
+		for (auto& el : result[rowToDivideIndex])
 		{
 			el /= divisor;
 		}
@@ -350,12 +407,13 @@ public:
 	{
 		auto result = *this;
 
+		// 4x4 specialisation
 		if constexpr (columns == 8)
 		{
-			const auto rowToAddFrom = _mm256_load_ps(reinterpret_cast<const float*>(&m_Data[rowToAddFromIndex]));
+			const auto rowToAddFrom = _mm256_load_ps(reinterpret_cast<const float*>(&this->m_Data[rowToAddFromIndex]));
 			const auto rowToAddTo = _mm256_load_ps(reinterpret_cast<const float*>(&m_Data[rowToAddToIndex]));
 
-			std::array<T, columns> multipliersArray;
+			std::array<T, 8> multipliersArray;
 			multipliersArray.fill(multiplier);
 
 			const auto multipliers = _mm256_load_ps(reinterpret_cast<const float*>(multipliersArray.data()));
