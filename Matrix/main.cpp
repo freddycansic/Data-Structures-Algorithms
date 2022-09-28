@@ -75,28 +75,41 @@ int main()
 		1, 14, 0, 3
 	);
 
-	//runAsyncBenchmark(mat, glmMat, 100000);
-	
-	std::cout << mat.multiplyOld(mat) << std::endl;
-	std::cout << mat * mat << std::endl;
-
 	constexpr size_t iterations = 100000;
 
-	std::cout << "Multiply old " << benchmark([iterations, &mat]()
-	{
-		for (size_t i = 0; i < iterations; ++i)
-		{
-			mat.multiplyOld(mat);
-		}
-	}) << std::endl;
+	//std::cout << mat.gaussianInverse() << std::endl;
+	//std::cout << mat.adjugateInverse() << std::endl;
 
-	std::cout << "Multiply new " << benchmark([iterations, &mat]()
-		{
-			for (size_t i = 0; i < iterations; ++i)
-			{
-				mat* mat;
-			}
-		}) << std::endl;
+	//runAsyncBenchmark(mat, glmMat, iterations);
+
+	for (size_t i = 0; i < iterations; ++i)
+	{
+		mat.adjugateInverse();
+	}
+
+	//std::cout << "Multiply old " << benchmark([iterations, &mat]()
+	//{
+	//	for (size_t i = 0; i < iterations; ++i)
+	//	{
+	//		mat.multiplyOld(mat);
+	//	}
+	//}) << std::endl;
+
+	//std::cout << "Multiply new " << benchmark([iterations, &mat]()
+	//	{
+	//		for (size_t i = 0; i < iterations; ++i)
+	//		{
+	//			mat* mat;
+	//		}
+	//	}) << std::endl;
+
+	//std::cout << "Multiply glm " << benchmark([iterations, &glmMat]()
+	//	{
+	//		for (size_t i = 0; i < iterations; ++i)
+	//		{
+				//glmMat* glmMat;
+	//		}
+	//	}) << std::endl;
 
 	return 0;
 }

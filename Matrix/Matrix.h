@@ -17,13 +17,7 @@ class Mat
 	using MATRIX_DATA = std::array<MATRIX_ROW, rows>;
 	
 public:
-	Mat()
-	{
-		for (size_t row = 0; row < rows; ++row)
-		{
-			memset(&m_Data[row], 0, columns * sizeof(T));
-		}
-	}
+	Mat() = default;
 
 	Mat(std::initializer_list<std::initializer_list<T>> list)
 	{
@@ -135,15 +129,34 @@ public:
 		return result;
 	}
 
-	Mat operator*(T multilpier) const
+	Mat operator*(T multilplier) const
 	{
 		Mat result;
+
+		if constexpr (columns == 4)
+		{
+			std::array<T, 4> multiplierArray;
+			multiplierArray.fill(multilplier);
+
+			const auto multipliers = _mm_load_ps(reinterpret_cast<const float*>(multiplierArray.data()));
+
+			for (size_t rowIndex = 0; rowIndex < rows; ++rowIndex)
+			{
+				const auto row = _mm_load_ps(reinterpret_cast<const float*>(&m_Data[rowIndex]));
+
+				const auto multipliedRow = _mm_mul_ps(row, multipliers);
+
+				_mm_store_ps(reinterpret_cast<float*>(&result[rowIndex]), multipliedRow);
+			}
+
+			return result;
+		}
 
 		for (size_t row = 0; row < rows; ++row)
 		{
 			for (size_t col = 0; col < columns; ++col)
 			{
-				result[row][col] = multilpier * m_Data[row][col];
+				result[row][col] = multilplier * m_Data[row][col];
 			}
 		}
 
@@ -231,7 +244,6 @@ public:
 			{
 				end[row][col] = result[row][augmentedCol];
 			}
-			//std::copy(result[row].end() - columns, result[row].end(), end[row].begin());
 		}
 
 		return end;
@@ -278,7 +290,6 @@ public:
 					minorCol = 0;
 					++minorRow;
 				}
-
 			}
 		}
 
@@ -378,23 +389,6 @@ public:
 	{
 		auto result = *this;
 
-		// worse i think
-		//if constexpr (columns == 8)
-		//{
-		//	const auto rowToDivide = _mm256_load_ps(reinterpret_cast<const float*>(&this->m_Data[rowToDivideIndex]));
-
-		//	std::array<T, 8> divisorsArray;
-		//	divisorsArray.fill(divisor);
-
-		//	const auto divisors = _mm256_load_ps(reinterpret_cast<const float*>(divisorsArray.data()));
-
-		//	const auto resultingRow = _mm256_div_ps(rowToDivide, divisors);
-
-		//	_mm256_store_ps(reinterpret_cast<float*>(&result[rowToDivideIndex]), resultingRow);
-
-		//	return result;
-		//}
-
 		for (auto& el : result[rowToDivideIndex])
 		{
 			el /= divisor;
@@ -406,26 +400,6 @@ public:
 	[[nodiscard]] Mat<rows, columns> addRowToRow(size_t rowToAddToIndex, T multiplier, size_t rowToAddFromIndex) const
 	{
 		auto result = *this;
-
-		// 4x4 specialisation
-		if constexpr (columns == 8)
-		{
-			const auto rowToAddFrom = _mm256_load_ps(reinterpret_cast<const float*>(&this->m_Data[rowToAddFromIndex]));
-			const auto rowToAddTo = _mm256_load_ps(reinterpret_cast<const float*>(&m_Data[rowToAddToIndex]));
-
-			std::array<T, 8> multipliersArray;
-			multipliersArray.fill(multiplier);
-
-			const auto multipliers = _mm256_load_ps(reinterpret_cast<const float*>(multipliersArray.data()));
-
-			const auto multipliedRowToAddFrom = _mm256_mul_ps(rowToAddFrom, multipliers);
-
-			const auto resultingRow = _mm256_add_ps(multipliedRowToAddFrom, rowToAddTo);
-
-			_mm256_store_ps(reinterpret_cast<float*>(&result[rowToAddToIndex]), resultingRow);
-
-			return result;
-		}
 
 		for (size_t col = 0; col < columns; ++col)
 		{
