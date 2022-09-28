@@ -75,41 +75,39 @@ int main()
 		1, 14, 0, 3
 	);
 
-	constexpr size_t iterations = 100000;
+	constexpr size_t iterations = 1000000;
 
 	//std::cout << mat.gaussianInverse() << std::endl;
 	//std::cout << mat.adjugateInverse() << std::endl;
 
 	//runAsyncBenchmark(mat, glmMat, iterations);
 
-	for (size_t i = 0; i < iterations; ++i)
+	std::cout << mat.determinant() << std::endl;
+	std::cout << mat.determinantOld() << std::endl;
+
+	std::cout << "Determinant old " << benchmark([iterations, &mat]()
 	{
-		mat.adjugateInverse();
-	}
+		for (size_t i = 0; i < iterations; ++i)
+		{
+			mat.determinantOld();
+		}
+	}) << std::endl;
 
-	//std::cout << "Multiply old " << benchmark([iterations, &mat]()
-	//{
-	//	for (size_t i = 0; i < iterations; ++i)
-	//	{
-	//		mat.multiplyOld(mat);
-	//	}
-	//}) << std::endl;
+	std::cout << "Determinant new " << benchmark([iterations, &mat]()
+		{
+			for (size_t i = 0; i < iterations; ++i)
+			{
+				mat.determinant();
+			}
+		}) << std::endl;
 
-	//std::cout << "Multiply new " << benchmark([iterations, &mat]()
-	//	{
-	//		for (size_t i = 0; i < iterations; ++i)
-	//		{
-	//			mat* mat;
-	//		}
-	//	}) << std::endl;
-
-	//std::cout << "Multiply glm " << benchmark([iterations, &glmMat]()
-	//	{
-	//		for (size_t i = 0; i < iterations; ++i)
-	//		{
-				//glmMat* glmMat;
-	//		}
-	//	}) << std::endl;
+	std::cout << "Determinant glm " << benchmark([iterations, &glmMat]()
+		{
+			for (size_t i = 0; i < iterations; ++i)
+			{
+				glm::determinant(glmMat);
+			}
+		}) << std::endl;
 
 	return 0;
 }

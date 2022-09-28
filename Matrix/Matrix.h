@@ -108,27 +108,6 @@ public:
 		return result;
 	}
 
-	template<size_t otherRows, size_t otherCols>
-	Mat<rows, otherCols> multiplyOld(const Mat<otherRows, otherCols>& other) const
-	{
-		static_assert(columns == otherRows, "Cannot multiply matrices.");
-
-		Mat<rows, otherCols> result;
-
-		for (size_t row = 0; row < rows; ++row) {
-			// for every column in matrix B
-			for (size_t otherCol = 0; otherCol < otherCols; ++otherCol) {
-				// for every piece of data in the column and row
-				for (size_t element = 0; element < rows; ++element) {
-					// sum of them
-					result[row][otherCol] += m_Data[row][element] * other[element][otherCol];
-				}
-			}
-		}
-
-		return result;
-	}
-
 	Mat operator*(T multilplier) const
 	{
 		Mat result;
@@ -170,6 +149,22 @@ public:
 		if constexpr (rows == 1) return m_Data[0][0];
 		if constexpr (rows == 2) return m_Data[0][0] * m_Data[1][1] - m_Data[1][0] * m_Data[0][1];
 
+		if constexpr (rows == 3)
+		{
+			std::array<T, 8> f1 = { m_Data[1][1], m_Data[1][2], m_Data[1][0], m_Data[1][2], m_Data[1][0], m_Data[1][1], 0, 0 };
+			std::array<T, 8> f2 = { m_Data[2][1], m_Data[2][0], m_Data[2][2], m_Data[2][0], m_Data[2][1], m_Data[2][0], 0, 0 };
+
+			const auto multiply1 = _mm256_load_ps(reinterpret_cast<const float*>(f1.data()));
+			const auto multiply2 = _mm256_load_ps(reinterpret_cast<const float*>(f2.data()));
+
+			const auto multiplyRes = _mm256_mul_ps(multiply1, multiply2);
+
+			// now contains answers
+			_mm256_store_ps(f1.data(), multiplyRes);
+
+			return (f1[0] - f1[1]) - (f1[2] - f1[3]) + (f1[4] - f1[5]);
+		}
+
 		T result = static_cast<T>(0);
 
 		// for each column make a minor
@@ -181,6 +176,30 @@ public:
 				auto minor = this->minor(0, col);
 
 				result += (col % 2 == 0 ? 1 : -1) * m_Data[0][col] * minor.determinant();
+			}
+		}
+
+		return result;
+	}
+
+	[[nodiscard]] T determinantOld() const
+	{
+		static_assert(rows == columns, "Can only compute determinant of square matrix!");
+
+		if constexpr (rows == 1) return m_Data[0][0];
+		if constexpr (rows == 2) return m_Data[0][0] * m_Data[1][1] - m_Data[1][0] * m_Data[0][1];
+
+		T result = static_cast<T>(0);
+
+		// for each column make a minor
+		for (size_t col = 0; col < columns; ++col)
+		{
+			if constexpr (rows > 1) // TODO should compile without this because of the guard clauses at the start of func i think
+			{
+				// generate minor
+				auto minor = this->minor(0, col);
+
+				result += (col % 2 == 0 ? 1 : -1) * m_Data[0][col] * minor.determinantOld();
 			}
 		}
 
